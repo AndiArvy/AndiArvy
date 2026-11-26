@@ -1,15 +1,19 @@
 import json
 import os
 from datetime import date
-from math import log1p, sin, tau
+from math import exp, log1p, sin, tau
 from pathlib import Path
 from urllib.request import Request, urlopen
 
 
 WIDTH = 1000
-HEIGHT = 288
-SCOPE_BASELINE = 224
-READOUT_Y = 269
+HEIGHT = 426
+SPECTRUM_TOP = 246
+SPECTRUM_BOTTOM = 385
+SPECTRUM_HEIGHT = SPECTRUM_BOTTOM - SPECTRUM_TOP
+BAND_COUNT = 40
+FRAME_SECONDS = 0.09
+READOUT_Y = 228
 READOUT_ROW = 24
 PALETTE = {
     "NONE": "#21323d",
@@ -57,24 +61,60 @@ def fetch_calendar(login, token):
     return result["data"]["user"]["contributionsCollection"]["contributionCalendar"]
 
 
-def waveform(totals, left, step):
+def spectrum_frames(weekly_counts, totals):
     peak = log1p(max(totals)) or 1
-    samples = 24
-    points = [f"{left},{SCOPE_BASELINE}"]
-    for index, count in enumerate(totals):
-        x = left + index * step
-        if not count:
-            points.append(f"{x + step},{SCOPE_BASELINE}")
-            continue
+    frequencies = [band / (BAND_COUNT - 1) for band in range(BAND_COUNT)]
+    frames = []
+    for counts, total in zip(weekly_counts, totals):
+        activity = log1p(total) / peak
+        daily_peak = log1p(max(counts)) or 1
+        for day, count in enumerate(counts):
+            # The calendar drives a visual signal on a relative frequency scale.
+            # Busier weeks reach higher bands and daily counts drive each pulse.
+            transient = log1p(count) / daily_peak
+            envelope = activity ** 0.65 * (0.30 + 0.66 * transient ** 0.6)
+            center = 0.14 + 0.64 * activity
+            spread = 0.13 + 0.11 * activity
+            phase = day / len(counts)
+            levels = []
+            for frequency in frequencies:
+                bass = 0.70 * exp(-0.5 * ((frequency - 0.12) / 0.14) ** 2)
+                mids = exp(-0.5 * ((frequency - center) / spread) ** 2)
+                ripple = 0.64 + 0.36 * sin(tau * (2.8 * frequency + phase)) ** 2
+                levels.append(envelope * max(bass, mids) * ripple)
+            frames.append(levels)
+    return frames
 
-        cycles = 0.65 + 2.1 * log1p(count) / peak
-        for sample in range(1, samples + 1):
-            fraction = sample / samples
-            # Taper each segment to the baseline at the week boundaries.
-            amplitude = 13 * min(1, 8 * fraction, 8 * (1 - fraction))
-            y = SCOPE_BASELINE - amplitude * sin(tau * cycles * fraction)
-            points.append(f"{x + step * fraction:.2f},{y:.2f}")
-    return ' '.join(points)
+
+def animate_transform(kind, values, timing, mode='linear'):
+    return (f'<animateTransform attributeName="transform" type="{kind}" '
+            f'values="{";".join(values)}" calcMode="{mode}" {timing}/>')
+
+
+def render_spectrum(frames, first, latest, timing):
+    elements = []
+    band_step = 902 / BAND_COUNT
+    for band, levels in enumerate(zip(*frames)):
+        x = 49 + band * band_step
+        width = band_step - 4.5
+        # Run the release over the previous loop too, so peak caps wrap smoothly.
+        peak = 0
+        peaks = []
+        for level in levels + levels:
+            peak = max(level, peak * 0.73 - 0.015)
+            peaks.append(peak)
+        peaks = peaks[len(levels):]
+
+        bar = animate_transform('scale', (f'1 {level:.3f}' for level in (*levels, levels[0])), timing)
+        cap = animate_transform('translate', (f'0 {-peak * SPECTRUM_HEIGHT:.2f}' for peak in (*peaks, peaks[0])), timing)
+        latest_height = levels[latest] * SPECTRUM_HEIGHT
+        elements.append(f"""  <g transform="translate({x:.2f} {SPECTRUM_BOTTOM})">
+    <rect class="band-rail" y="{-SPECTRUM_HEIGHT}" width="{width:.2f}" height="{SPECTRUM_HEIGHT}" rx="2"/>
+    <rect class="band motion" y="{-SPECTRUM_HEIGHT}" width="{width:.2f}" height="{SPECTRUM_HEIGHT}" rx="2" transform="scale(1 {levels[first]:.3f})">{bar}</rect>
+    <rect class="peak motion" width="{width:.2f}" height="2.5" rx="1" transform="translate(0 {-peaks[first] * SPECTRUM_HEIGHT:.2f})">{cap}</rect>
+    <rect class="band still" y="{-latest_height:.2f}" width="{width:.2f}" height="{latest_height:.2f}" rx="2"/>
+  </g>""")
+    return '\n'.join(elements)
 
 
 def calendar_graph(weeks):
@@ -82,6 +122,7 @@ def calendar_graph(weeks):
     travel = step * len(weeks)
     left = (WIDTH - travel) // 2
     marks = []
+    weekly_counts = []
     totals = []
     readings = []
     month = None
@@ -95,38 +136,54 @@ def calendar_graph(weeks):
             label_x = x
             marks.append(f'<text class="month" x="{x}" y="76">{first_date:%b}</text>')
 
+        counts = [0] * 7
         for day in days:
             y = 87 + day["weekday"] * 15
             fill = PALETTE[day["contributionLevel"]]
             marks.append(f'<rect x="{x}" y="{y}" width="{step - 4}" height="12" rx="2.5" fill="{fill}"/>')
-        total = sum(day["contributionCount"] for day in days)
+            counts[day['weekday']] = day['contributionCount']
+        total = sum(counts)
+        weekly_counts.append(counts)
         totals.append(total)
         unit = 'contribution' if total == 1 else 'contributions'
         readings.append(f"Week of {first_date:%b} {first_date.day}, {first_date.year} · {total:,} {unit}")
 
+    # Begin with a recent active week so the display has a signal on load.
+    start_week = max(range(max(0, len(weeks) - 8), len(weeks)), key=totals.__getitem__)
+    if not totals[start_week]:
+        start_week = totals.index(max(totals))
+    start_day = weekly_counts[start_week].index(max(weekly_counts[start_week]))
+    first = start_week * 7 + start_day
+    latest = (len(weeks) - 1) * 7 + weekly_counts[-1].index(max(weekly_counts[-1]))
+    frames = spectrum_frames(weekly_counts, totals)
+    timing = f'begin="{-first * FRAME_SECONDS:.2f}s" dur="{len(frames) * FRAME_SECONDS:.2f}s" repeatCount="indefinite"'
+    sweep = animate_transform('translate', ['0 0', f'{travel} 0'], timing)
+    highlight = animate_transform('translate', (f'{index * step} 0' for index in range(len(weeks))), timing, 'discrete')
+    readout = animate_transform('translate', (f'0 {-index * READOUT_ROW}' for index in range(len(weeks))), timing, 'discrete')
     labels = '\n'.join(
-        f'<text x="39" y="{READOUT_Y + index * READOUT_ROW}">{reading}</text>'
+        f'<text x="961" y="{READOUT_Y + index * READOUT_ROW}">{reading}</text>'
         for index, reading in enumerate(readings)
     )
     cells = '\n'.join(marks)
     return f"""{cells}
-<polyline class="signal" points="{waveform(totals, left, step)}"/>
-<g style="--weeks: {len(weeks)}; --scan-travel: {travel}px; --readout-travel: {-len(weeks) * READOUT_ROW}px">
-  <g clip-path="url(#screen)">
-    <rect class="scan-week" x="{left}" y="84" width="{step - 1}" height="108" rx="3"/>
-    <g class="probe">
-      <rect x="{left - 72}" y="68" width="72" height="177" fill="url(#sweep)"/>
-      <path d="M{left} 68V245" stroke="#ffd278" stroke-width="1.5"/>
-    </g>
-  </g>
-  <g clip-path="url(#readout-window)">
-    <g class="readout readings">
-      {labels}
-    </g>
-    <text class="readout latest" x="39" y="{READOUT_Y}">{readings[-1]}</text>
+<g class="motion" clip-path="url(#calendar-screen)">
+  <rect class="scan-week" x="{left}" y="84" width="{step - 1}" height="108" rx="3" transform="translate({start_week * step} 0)">{highlight}</rect>
+  <g class="probe" transform="translate({first * step / 7:.2f} 0)">
+    {sweep}
+    <rect x="{left - 72}" y="68" width="72" height="125" fill="url(#sweep)"/>
+    <path d="M{left} 68V193" stroke="#ffd278" stroke-width="1.5"/>
   </g>
 </g>
-<text class="legend" x="961" y="{READOUT_Y}" text-anchor="end">Pulse density · contributions per week</text>"""
+<g class="readout" clip-path="url(#readout-window)" text-anchor="end">
+  <g class="motion readings" transform="translate(0 {-start_week * READOUT_ROW})">
+    {readout}
+    {labels}
+  </g>
+  <text class="still" x="961" y="{READOUT_Y}">{readings[-1]}</text>
+</g>
+<g clip-path="url(#spectrum-screen)">
+{render_spectrum(frames, first, latest, timing)}
+</g>"""
 
 
 def render(calendar=None):
@@ -138,54 +195,61 @@ def render(calendar=None):
         weeks = calendar["weeks"]
 
     graph = calendar_graph(weeks) if weeks else ''
-    description = f'{status}. Denser waves show more contributions in a week.' if weeks else status
+    description = f'{status}. The animated spectrum represents daily contributions in the highlighted week.' if weeks else status
 
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" viewBox="0 0 {WIDTH} {HEIGHT}" role="img" aria-labelledby="title status">
-<title id="title">Contribution trace</title>
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" id="reduced-motion" width="{WIDTH}" height="{HEIGHT}" viewBox="0 0 {WIDTH} {HEIGHT}" role="img" aria-labelledby="title status">
+<title id="title">Contribution spectrum</title>
 <desc id="status">{description}</desc>
 <defs>
   <linearGradient id="sweep">
     <stop offset="0" stop-color="#ffd278" stop-opacity="0"/>
     <stop offset="1" stop-color="#ffd278" stop-opacity=".2"/>
   </linearGradient>
-  <pattern id="grid" x="39" y="203" width="23" height="10.5" patternUnits="userSpaceOnUse">
-    <path d="M23 0H0V10.5" fill="none" stroke="#263945" stroke-width=".8"/>
+  <linearGradient id="band-color" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0" stop-color="#288e77"/>
+    <stop offset=".70" stop-color="#84d7ac"/>
+    <stop offset="1" stop-color="#ffe2a5"/>
+  </linearGradient>
+  <pattern id="grid" x="39" y="{SPECTRUM_TOP}" width="23" height="23" patternUnits="userSpaceOnUse">
+    <path d="M23 0H0V23" fill="none" stroke="#263945" stroke-width=".8"/>
   </pattern>
-  <clipPath id="screen"><rect x="39" y="68" width="922" height="177"/></clipPath>
-  <clipPath id="readout-window"><rect x="39" y="252" width="450" height="{READOUT_ROW}"/></clipPath>
+  <clipPath id="calendar-screen"><rect x="39" y="68" width="922" height="126"/></clipPath>
+  <clipPath id="readout-window"><rect x="480" y="211" width="482" height="{READOUT_ROW}"/></clipPath>
+  <clipPath id="spectrum-screen"><rect x="39" y="{SPECTRUM_TOP}" width="922" height="{SPECTRUM_HEIGHT}"/></clipPath>
 </defs>
 <style>
-  svg {{ --scan-duration: 18s; }}
   .title {{ fill: #f4f7fa; font: 600 26px system-ui, sans-serif; }}
   .status {{ fill: #ffda93; font: 17px ui-monospace, monospace; }}
   .month {{ fill: #a8c1cc; font: 14px ui-monospace, monospace; }}
+  .panel-title {{ fill: #f4f7fa; font: 600 17px system-ui, sans-serif; }}
   .readout {{ fill: #ffda93; font: 16px ui-monospace, monospace; }}
-  .legend {{ fill: #a8c1cc; font: 14px ui-monospace, monospace; }}
+  .axis {{ fill: #a8c1cc; font: 14px ui-monospace, monospace; }}
   .baseline {{ fill: none; stroke: #314953; }}
-  .signal {{ fill: none; stroke: #ffd278; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }}
-  .probe {{ animation: sweep var(--scan-duration) linear infinite; }}
-  .scan-week {{
-    fill: #ffd278; fill-opacity: .09; stroke: #ffd278; stroke-opacity: .65;
-    animation: sweep var(--scan-duration) steps(var(--weeks), end) infinite;
-  }}
-  .readings {{ animation: advance-readout var(--scan-duration) steps(var(--weeks), end) infinite; }}
-  .latest {{ display: none; }}
-  @keyframes sweep {{ to {{ transform: translateX(var(--scan-travel)); }} }}
-  @keyframes advance-readout {{ to {{ transform: translateY(var(--readout-travel)); }} }}
+  .scan-week {{ fill: #ffd278; fill-opacity: .09; stroke: #ffd278; stroke-opacity: .65; }}
+  .band-rail {{ fill: #a8c1cc; fill-opacity: .045; }}
+  .band {{ fill: url(#band-color); }}
+  .peak {{ fill: #ffe2a5; }}
+  .still {{ display: none; }}
+  #reduced-motion:target .motion {{ display: none; }}
+  #reduced-motion:target .still {{ display: inline; }}
   @media (prefers-reduced-motion: reduce) {{
-    .probe, .scan-week, .readings {{ animation: none; display: none; }}
-    .latest {{ display: inline; }}
+    .motion {{ display: none; }}
+    .still {{ display: inline; }}
   }}
 </style>
 <rect x=".5" y=".5" width="999" height="{HEIGHT - 1}" rx="12" fill="#101b24" stroke="#526371"/>
 <circle cx="43" cy="35" r="4" fill="#ffd278"/>
-<text class="title" x="59" y="44">Contribution trace</text>
+<text class="title" x="59" y="44">Contribution spectrum</text>
 <text class="status" x="960" y="43" text-anchor="end">{status}</text>
 <path class="baseline" d="M39 58H961"/>
-<rect x="39" y="203" width="922" height="42" rx="4" fill="#0c161f"/>
-<rect x="39" y="203" width="922" height="42" rx="4" fill="url(#grid)"/>
-<path class="baseline" d="M39 {SCOPE_BASELINE}H961"/>
+<text class="panel-title" x="39" y="{READOUT_Y}">Activity spectrum</text>
+<rect x="39" y="{SPECTRUM_TOP}" width="922" height="{SPECTRUM_HEIGHT}" rx="4" fill="#0c161f"/>
+<rect x="39" y="{SPECTRUM_TOP}" width="922" height="{SPECTRUM_HEIGHT}" rx="4" fill="url(#grid)"/>
 {graph}
+<path class="baseline" d="M39 {SPECTRUM_BOTTOM}H961"/>
+<text class="axis" x="22" y="315.5" text-anchor="middle" transform="rotate(-90 22 315.5)">Relative amplitude</text>
+<text class="axis" x="39" y="406">Low frequency</text>
+<text class="axis" x="961" y="406" text-anchor="end">High frequency</text>
 </svg>
 """
 

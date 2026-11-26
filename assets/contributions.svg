@@ -1,35 +1,48 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="238" viewBox="0 0 1000 238" role="img" aria-labelledby="title status">
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="288" viewBox="0 0 1000 288" role="img" aria-labelledby="title status">
 <title id="title">Contribution trace</title>
-<desc id="status">593 contributions · past year</desc>
+<desc id="status">594 contributions · past year. Denser waves show more contributions in a week.</desc>
 <defs>
   <linearGradient id="sweep">
     <stop offset="0" stop-color="#ffd278" stop-opacity="0"/>
     <stop offset="1" stop-color="#ffd278" stop-opacity=".2"/>
   </linearGradient>
-  <pattern id="grid" x="39" y="68" width="23" height="18" patternUnits="userSpaceOnUse">
-    <path d="M23 0H0V18" fill="none" stroke="#263945" stroke-width=".8"/>
+  <pattern id="grid" x="39" y="203" width="23" height="10.5" patternUnits="userSpaceOnUse">
+    <path d="M23 0H0V10.5" fill="none" stroke="#263945" stroke-width=".8"/>
   </pattern>
-  <clipPath id="screen"><rect x="39" y="68" width="922" height="153"/></clipPath>
+  <clipPath id="screen"><rect x="39" y="68" width="922" height="177"/></clipPath>
+  <clipPath id="readout-window"><rect x="39" y="252" width="450" height="24"/></clipPath>
 </defs>
 <style>
+  svg { --scan-duration: 18s; }
   .title { fill: #f4f7fa; font: 600 26px system-ui, sans-serif; }
   .status { fill: #ffda93; font: 17px ui-monospace, monospace; }
   .month { fill: #a8c1cc; font: 14px ui-monospace, monospace; }
+  .readout { fill: #ffda93; font: 16px ui-monospace, monospace; }
+  .legend { fill: #a8c1cc; font: 14px ui-monospace, monospace; }
   .baseline { fill: none; stroke: #314953; }
-  .signal { fill: none; stroke: #ffd278; stroke-linecap: round; stroke-linejoin: round; }
-  .probe { opacity: 0; animation: sweep 4.5s ease-in-out infinite; }
-  @keyframes sweep {
-    0% { transform: translateX(0); opacity: 0; }
-    10%, 90% { opacity: 1; }
-    100% { transform: translateX(1036px); opacity: 0; }
+  .signal { fill: none; stroke: #ffd278; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
+  .probe { animation: sweep var(--scan-duration) linear infinite; }
+  .scan-week {
+    fill: #ffd278; fill-opacity: .09; stroke: #ffd278; stroke-opacity: .65;
+    animation: sweep var(--scan-duration) steps(var(--weeks), end) infinite;
   }
-  @media (prefers-reduced-motion: reduce) { .probe { animation: none; } }
+  .readings { animation: advance-readout var(--scan-duration) steps(var(--weeks), end) infinite; }
+  .latest { display: none; }
+  @keyframes sweep { to { transform: translateX(var(--scan-travel)); } }
+  @keyframes advance-readout { to { transform: translateY(var(--readout-travel)); } }
+  @media (prefers-reduced-motion: reduce) {
+    .probe, .scan-week, .readings { animation: none; display: none; }
+    .latest { display: inline; }
+  }
 </style>
-<rect x=".5" y=".5" width="999" height="237" rx="12" fill="#101b24" stroke="#526371"/>
+<rect x=".5" y=".5" width="999" height="287" rx="12" fill="#101b24" stroke="#526371"/>
 <circle cx="43" cy="35" r="4" fill="#ffd278"/>
 <text class="title" x="59" y="44">Contribution trace</text>
-<text class="status" x="960" y="43" text-anchor="end">593 contributions · past year</text>
+<text class="status" x="960" y="43" text-anchor="end">594 contributions · past year</text>
 <path class="baseline" d="M39 58H961"/>
+<rect x="39" y="203" width="922" height="42" rx="4" fill="#0c161f"/>
+<rect x="39" y="203" width="922" height="42" rx="4" fill="url(#grid)"/>
+<path class="baseline" d="M39 224H961"/>
 <text class="month" x="49" y="76">Nov</text>
 <rect x="49" y="87" width="13" height="12" rx="2.5" fill="#21323d"/>
 <rect x="49" y="102" width="13" height="12" rx="2.5" fill="#21323d"/>
@@ -412,12 +425,73 @@
 <rect x="933" y="117" width="13" height="12" rx="2.5" fill="#21323d"/>
 <rect x="933" y="132" width="13" height="12" rx="2.5" fill="#3c6359"/>
 <rect x="933" y="147" width="13" height="12" rx="2.5" fill="#3c6359"/>
-<path class="baseline" d="M49 216H951"/>
-<polyline class="signal" points="55,216 72,216 89,216 106,216 123,216 140,216 157,216 174,216 191,216 208,216 225,216 242,216 259,216 276,216 293,216 310,216 327,216 344,216 361,213 378,214 395,214 412,213 429,214 446,208 463,203 480,197 497,206 514,209 531,212 548,212 565,216 582,215 599,216 616,215 633,216 650,216 667,216 684,216 701,216 718,216 735,216 752,215 769,216 786,216 803,216 820,216 837,216 854,216 871,216 888,216 905,216 922,216 939,215"/>
-<g clip-path="url(#screen)">
-  <g class="probe">
-    <rect x="-76" y="68" width="115" height="153" fill="url(#sweep)"/>
-    <path d="M39 68V221" stroke="#ffd278" stroke-width="1.5"/>
+<polyline class="signal" points="49,224 66,224 83,224 100,224 117,224 134,224 151,224 168,224 185,224 202,224 219,224 236,224 253,224 270,224 287,224 304,224 321,224 338,224 355,224 355.71,221.91 356.42,216.68 357.12,211.02 357.83,212.24 358.54,216.38 359.25,222.40 359.96,228.81 360.67,234.04 361.38,236.78 362.08,236.35 362.79,232.87 363.50,227.18 364.21,220.71 364.92,215.06 365.62,211.62 366.33,211.24 367.04,214.03 367.75,219.28 368.46,225.71 369.17,231.71 369.88,235.80 370.58,232.65 371.29,227.64 372.00,224.00 372.71,221.93 373.42,216.73 374.12,211.04 374.83,212.12 375.54,216.08 376.25,221.96 376.96,228.33 377.67,233.65 378.38,236.64 379.08,236.56 379.79,233.44 380.50,228.04 381.21,221.65 381.92,215.84 382.62,212.00 383.33,211.07 384.04,213.27 384.75,218.07 385.46,224.31 386.17,230.47 386.88,235.06 387.58,232.65 388.29,227.92 389.00,224.00 389.71,222.03 390.42,216.99 391.12,211.16 391.83,211.63 392.54,214.80 393.25,219.97 393.96,226.01 394.67,231.62 395.38,235.57 396.08,237.00 396.79,235.60 397.50,231.67 398.21,226.07 398.92,220.02 399.62,214.84 400.33,211.65 401.04,211.15 401.75,213.45 402.46,218.05 403.17,223.94 403.88,229.85 404.58,230.99 405.29,228.28 406.00,224.00 406.71,221.82 407.42,216.46 408.12,211.00 408.83,212.85 409.54,217.74 410.25,224.33 410.96,230.83 411.67,235.47 412.38,236.99 413.08,234.98 413.79,229.98 414.50,223.35 415.21,216.90 415.92,212.38 416.62,211.03 417.33,213.20 418.04,218.31 418.75,224.97 419.46,231.37 420.17,235.76 420.88,236.95 421.58,231.08 422.29,225.80 423.00,224.00 423.71,222.03 424.42,216.99 425.12,211.16 425.83,211.63 426.54,214.80 427.25,219.97 427.96,226.01 428.67,231.62 429.38,235.57 430.08,237.00 430.79,235.60 431.50,231.67 432.21,226.07 432.92,220.02 433.62,214.84 434.33,211.65 435.04,211.15 435.75,213.45 436.46,218.05 437.17,223.94 437.88,229.85 438.58,230.99 439.29,228.28 440.00,224.00 440.71,221.47 441.42,215.79 442.12,211.58 442.83,216.14 443.54,223.66 444.25,231.31 444.96,236.21 445.67,236.52 446.38,232.12 447.08,224.67 447.79,216.97 448.50,211.91 449.21,211.39 449.92,215.62 450.62,223.00 451.33,230.75 452.04,235.96 452.75,236.68 453.46,232.63 454.17,225.34 454.88,217.54 455.58,216.11 456.29,219.75 457.00,224.00 457.71,221.28 458.42,215.54 459.12,212.36 459.83,218.55 460.54,227.15 461.25,234.36 461.96,236.99 462.67,233.90 463.38,226.43 464.08,217.89 464.79,212.05 465.50,211.48 466.21,216.44 466.92,224.74 467.62,232.71 468.33,236.83 469.04,235.30 469.75,228.77 470.46,220.14 471.17,213.21 471.88,211.05 472.58,217.73 473.29,223.43 474.00,224.00 474.71,221.14 475.42,215.41 476.12,213.19 476.83,220.64 477.54,229.75 478.25,236.01 478.96,236.31 479.67,230.50 480.38,221.46 481.08,213.69 481.79,211.03 482.50,214.81 483.21,223.15 483.92,231.91 484.62,236.75 485.33,235.26 486.04,228.18 486.75,219.03 487.46,212.34 488.17,211.44 488.88,216.78 489.58,225.13 490.29,227.26 491.00,224.00 491.71,221.36 492.42,215.63 493.12,211.98 493.83,217.49 494.54,225.68 495.25,233.17 495.96,236.88 496.67,235.28 497.38,229.01 498.08,220.68 498.79,213.71 499.50,211.00 500.21,213.65 500.92,220.58 501.62,228.92 502.33,235.22 503.04,236.90 503.75,233.25 504.46,225.78 505.17,217.57 505.88,212.02 506.58,215.61 507.29,221.34 508.00,224.00 508.71,221.52 509.42,215.87 510.12,211.43 510.83,215.57 511.54,222.75 512.25,230.38 512.96,235.71 513.67,236.83 514.38,233.33 515.08,226.48 515.79,218.73 516.50,212.88 517.21,211.03 517.92,213.84 518.62,220.31 519.33,228.11 520.04,234.42 520.75,236.99 521.46,234.89 522.17,228.87 522.88,221.10 523.58,217.58 524.29,219.70 525.00,224.00 525.71,221.77 526.42,216.35 527.12,211.02 527.83,213.20 528.54,218.47 529.25,225.31 529.96,231.77 530.67,236.03 531.38,236.85 532.08,234.02 532.79,228.33 533.50,221.40 534.21,215.22 534.92,211.54 535.62,211.41 536.33,214.87 537.04,220.93 537.75,227.86 538.46,233.70 539.17,236.77 539.88,236.20 540.58,229.44 541.29,224.60 542.00,224.00 542.71,221.72 543.42,216.24 544.12,211.06 544.83,213.65 545.54,219.35 546.25,226.45 546.96,232.81 547.67,236.53 548.38,236.48 549.08,232.68 549.79,226.28 550.50,219.19 551.21,213.55 551.92,211.04 552.62,212.43 553.33,217.30 554.04,224.18 554.75,231.00 555.46,235.72 556.17,236.92 556.88,234.24 557.58,226.99 558.29,223.13 559.00,224.00 559.71,222.62 560.42,218.77 561.12,213.26 561.83,211.49 562.54,211.02 563.25,211.90 563.96,214.04 564.67,217.23 565.38,221.11 566.08,225.30 566.79,229.35 567.50,232.85 568.21,235.42 568.92,236.80 569.62,236.85 570.33,235.56 571.04,233.07 571.75,229.63 572.46,225.61 573.17,221.41 573.88,217.49 574.58,217.50 575.29,220.01 576.00,224.00 576.71,222.52 577.42,218.43 578.12,212.74 578.83,211.20 579.54,211.20 580.25,212.74 580.96,215.64 581.67,219.54 582.38,223.99 583.08,228.43 583.79,232.35 584.50,235.25 585.21,236.80 585.92,236.81 586.62,235.27 587.33,232.37 588.04,228.47 588.75,224.02 589.46,219.58 590.17,215.66 590.88,212.75 591.58,215.47 592.29,219.73 593.00,224.00 610,224 610.71,222.37 611.42,217.95 612.12,212.09 612.83,211.00 613.54,211.84 614.25,214.46 614.96,218.50 615.67,223.34 616.38,228.28 617.08,232.59 617.79,235.63 618.50,236.96 619.21,236.38 619.92,233.97 620.62,230.09 621.33,225.32 622.04,220.35 622.75,215.92 623.46,212.68 624.17,211.10 624.88,211.43 625.58,217.08 626.29,221.78 627.00,224.00 644,224 661,224 678,224 695,224 712,224 729,224 746,224 746.71,222.44 747.42,218.17 748.12,212.37 748.83,211.06 749.54,211.49 750.25,213.61 750.96,217.13 751.67,221.57 752.38,226.35 753.08,230.80 753.79,234.34 754.50,236.49 755.21,236.95 755.92,235.67 756.62,232.81 757.33,228.77 758.04,224.08 758.75,219.39 759.46,215.31 760.17,212.41 760.88,211.07 761.58,215.64 762.29,220.52 763.00,224.00 780,224 797,224 814,224 831,224 848,224 865,224 882,224 899,224 916,224 933,224 933.71,222.26 934.42,217.61 935.12,211.69 935.83,211.05 936.54,212.59 937.25,216.07 937.96,220.89 938.67,226.23 939.38,231.20 940.08,234.95 940.79,236.84 941.50,236.57 942.21,234.16 942.92,230.04 943.62,224.90 944.33,219.60 945.04,215.05 945.75,212.01 946.46,211.00 947.17,212.19 947.88,215.38 948.58,221.35 949.29,224.45 950.00,224.00"/>
+<g style="--weeks: 53; --scan-travel: 901px; --readout-travel: -1272px">
+  <g clip-path="url(#screen)">
+    <rect class="scan-week" x="49" y="84" width="16" height="108" rx="3"/>
+    <g class="probe">
+      <rect x="-23" y="68" width="72" height="177" fill="url(#sweep)"/>
+      <path d="M49 68V245" stroke="#ffd278" stroke-width="1.5"/>
+    </g>
+  </g>
+  <g clip-path="url(#readout-window)">
+    <g class="readout readings">
+      <text x="39" y="269">Week of Nov 23, 2025 · 0 contributions</text>
+<text x="39" y="293">Week of Nov 30, 2025 · 0 contributions</text>
+<text x="39" y="317">Week of Dec 7, 2025 · 0 contributions</text>
+<text x="39" y="341">Week of Dec 14, 2025 · 0 contributions</text>
+<text x="39" y="365">Week of Dec 21, 2025 · 0 contributions</text>
+<text x="39" y="389">Week of Dec 28, 2025 · 0 contributions</text>
+<text x="39" y="413">Week of Jan 4, 2026 · 0 contributions</text>
+<text x="39" y="437">Week of Jan 11, 2026 · 0 contributions</text>
+<text x="39" y="461">Week of Jan 18, 2026 · 0 contributions</text>
+<text x="39" y="485">Week of Jan 25, 2026 · 0 contributions</text>
+<text x="39" y="509">Week of Feb 1, 2026 · 0 contributions</text>
+<text x="39" y="533">Week of Feb 8, 2026 · 0 contributions</text>
+<text x="39" y="557">Week of Feb 15, 2026 · 0 contributions</text>
+<text x="39" y="581">Week of Feb 22, 2026 · 0 contributions</text>
+<text x="39" y="605">Week of Mar 1, 2026 · 0 contributions</text>
+<text x="39" y="629">Week of Mar 8, 2026 · 0 contributions</text>
+<text x="39" y="653">Week of Mar 15, 2026 · 0 contributions</text>
+<text x="39" y="677">Week of Mar 22, 2026 · 0 contributions</text>
+<text x="39" y="701">Week of Mar 29, 2026 · 19 contributions</text>
+<text x="39" y="725">Week of Apr 5, 2026 · 18 contributions</text>
+<text x="39" y="749">Week of Apr 12, 2026 · 14 contributions</text>
+<text x="39" y="773">Week of Apr 19, 2026 · 24 contributions</text>
+<text x="39" y="797">Week of Apr 26, 2026 · 14 contributions</text>
+<text x="39" y="821">Week of May 3, 2026 · 58 contributions</text>
+<text x="39" y="845">Week of May 10, 2026 · 95 contributions</text>
+<text x="39" y="869">Week of May 17, 2026 · 140 contributions</text>
+<text x="39" y="893">Week of May 24, 2026 · 77 contributions</text>
+<text x="39" y="917">Week of May 31, 2026 · 51 contributions</text>
+<text x="39" y="941">Week of Jun 7, 2026 · 27 contributions</text>
+<text x="39" y="965">Week of Jun 14, 2026 · 31 contributions</text>
+<text x="39" y="989">Week of Jun 21, 2026 · 3 contributions</text>
+<text x="39" y="1013">Week of Jun 28, 2026 · 4 contributions</text>
+<text x="39" y="1037">Week of Jul 5, 2026 · 0 contributions</text>
+<text x="39" y="1061">Week of Jul 12, 2026 · 6 contributions</text>
+<text x="39" y="1085">Week of Jul 19, 2026 · 0 contributions</text>
+<text x="39" y="1109">Week of Jul 26, 2026 · 0 contributions</text>
+<text x="39" y="1133">Week of Aug 2, 2026 · 0 contributions</text>
+<text x="39" y="1157">Week of Aug 9, 2026 · 0 contributions</text>
+<text x="39" y="1181">Week of Aug 16, 2026 · 0 contributions</text>
+<text x="39" y="1205">Week of Aug 23, 2026 · 0 contributions</text>
+<text x="39" y="1229">Week of Aug 30, 2026 · 0 contributions</text>
+<text x="39" y="1253">Week of Sep 6, 2026 · 5 contributions</text>
+<text x="39" y="1277">Week of Sep 13, 2026 · 0 contributions</text>
+<text x="39" y="1301">Week of Sep 20, 2026 · 0 contributions</text>
+<text x="39" y="1325">Week of Sep 27, 2026 · 0 contributions</text>
+<text x="39" y="1349">Week of Oct 4, 2026 · 0 contributions</text>
+<text x="39" y="1373">Week of Oct 11, 2026 · 0 contributions</text>
+<text x="39" y="1397">Week of Oct 18, 2026 · 0 contributions</text>
+<text x="39" y="1421">Week of Oct 25, 2026 · 0 contributions</text>
+<text x="39" y="1445">Week of Nov 1, 2026 · 0 contributions</text>
+<text x="39" y="1469">Week of Nov 8, 2026 · 0 contributions</text>
+<text x="39" y="1493">Week of Nov 15, 2026 · 0 contributions</text>
+<text x="39" y="1517">Week of Nov 22, 2026 · 8 contributions</text>
+    </g>
+    <text class="readout latest" x="39" y="269">Week of Nov 22, 2026 · 8 contributions</text>
   </g>
 </g>
+<text class="legend" x="961" y="269" text-anchor="end">Pulse density · contributions per week</text>
 </svg>
