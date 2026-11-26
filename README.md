@@ -21,4 +21,4 @@ At **Barunastra ITS**, I developed the concept for a system-wide redesign and re
   <img src="./assets/skills/mqtt.svg" width="108" height="40" alt="MQTT" />
 </p>
 
-<img src="./assets/contributions.svg" width="100%" alt="GitHub contribution trace with an animated oscilloscope sweep" />
+<img src="./assets/contributions.svg" width="100%" alt="GitHub contributions by day. Denser oscilloscope waves show more contributions per week, and the scanner displays the total for the highlighted week." />
