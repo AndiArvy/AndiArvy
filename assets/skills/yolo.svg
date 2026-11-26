@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="108" height="40" viewBox="0 0 108 40" role="img" aria-labelledby="title">
+  <title id="title">YOLO</title>
+  <rect x=".5" y=".5" width="107" height="39" rx="8" fill="#101b24" stroke="#526371"/>
+  <!-- ultralytics logo from Simple Icons. -->
+  <g transform="translate(12 10) scale(.833333)" fill="#91aeff">
+    <path d="m12.736 7.341-.002 2.897c.012 3.953-3.188 7.177-7.098 7.171-1.553-.003-2.967-.48-4.112-1.313 2.056 3.725 5.999 6.24 10.48 6.245 6.511-.003 11.891-5.343 11.992-11.91l-.002-.027c.006-.151 0-2.951.006-3.075-.01-3.116-2.538-5.677-5.63-5.67-3.105-.006-5.645 2.54-5.634 5.683zM5.629 4.573C2.525 4.573 0 7.118 0 10.246s2.525 5.673 5.63 5.673c3.103 0 5.629-2.545 5.629-5.673s-2.526-5.673-5.63-5.673"/>
+  </g>
+  <text x="42" y="25" fill="#f4f7fa" font-family="system-ui, sans-serif" font-size="14" font-weight="600">YOLO</text>
+</svg>

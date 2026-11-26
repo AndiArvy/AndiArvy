@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="108" height="40" viewBox="0 0 108 40" role="img" aria-labelledby="title">
+  <title id="title">PLC</title>
+  <rect x=".5" y=".5" width="107" height="39" rx="8" fill="#101b24" stroke="#526371"/>
+  <g transform="translate(12 10) scale(.833333)" fill="none" stroke="#aed2e6" stroke-width="1.6" stroke-linecap="round">
+    <path d="M3 3v18M21 3v18M3 8h6m6 0h6M9 5v6m6-6v6M3 16h6m6 0h6m-11-3a4 4 0 0 0 0 6m4-6a4 4 0 0 1 0 6"/>
+  </g>
+  <text x="42" y="25" fill="#f4f7fa" font-family="system-ui, sans-serif" font-size="14" font-weight="600">PLC</text>
+</svg>
