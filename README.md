@@ -49,9 +49,9 @@ I designed KiCad controller boards for Arduino Nano and ESP32 learning robots. T
 
 ## GitHub activity
 
-The spectrum animates daily contribution counts as the scanner moves through each week. Busier weeks push the signal into higher bands. The underlying calendar refreshes daily through GitHub Actions.
+The oscilloscope scrolls through a waveform driven by daily contribution counts. Busier weeks produce larger, faster pulses. The underlying calendar refreshes daily through GitHub Actions.
 
 <picture>
   <source media="(prefers-reduced-motion: reduce)" srcset="./assets/contributions.svg#reduced-motion" />
-  <img src="./assets/contributions.svg" width="100%" alt="GitHub contribution calendar with a scanner, a weekly count, and 40 animated spectrum bands driven by daily contribution activity." />
+  <img src="./assets/contributions.svg" width="100%" alt="GitHub contribution calendar with a scanner, a weekly count, and a scrolling oscilloscope waveform." />
 </picture>
