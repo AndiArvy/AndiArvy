@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="238" viewBox="0 0 1000 238" role="img" aria-labelledby="title status">
+<title id="title">Contribution trace</title>
+<desc id="status">Awaiting the first GitHub Actions run</desc>
+<defs>
+  <linearGradient id="sweep">
+    <stop offset="0" stop-color="#ffd278" stop-opacity="0"/>
+    <stop offset="1" stop-color="#ffd278" stop-opacity=".2"/>
+  </linearGradient>
+  <pattern id="grid" x="39" y="68" width="23" height="18" patternUnits="userSpaceOnUse">
+    <path d="M23 0H0V18" fill="none" stroke="#263945" stroke-width=".8"/>
+  </pattern>
+  <clipPath id="screen"><rect x="39" y="68" width="922" height="153"/></clipPath>
+</defs>
+<style>
+  .title { fill: #f4f7fa; font: 600 26px system-ui, sans-serif; }
+  .status { fill: #ffda93; font: 17px ui-monospace, monospace; }
+  .month { fill: #a8c1cc; font: 14px ui-monospace, monospace; }
+  .baseline { fill: none; stroke: #314953; }
+  .signal { fill: none; stroke: #ffd278; stroke-linecap: round; stroke-linejoin: round; }
+  .probe { opacity: 0; animation: sweep 4.5s ease-in-out; }
+  @keyframes sweep {
+    0% { transform: translateX(0); opacity: 0; }
+    10%, 90% { opacity: 1; }
+    100% { transform: translateX(1036px); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { .probe { animation: none; } }
+</style>
+<rect x=".5" y=".5" width="999" height="237" rx="12" fill="#101b24" stroke="#526371"/>
+<circle cx="43" cy="35" r="4" fill="#ffd278"/>
+<text class="title" x="59" y="44">Contribution trace</text>
+<text class="status" x="960" y="43" text-anchor="end">Awaiting the first GitHub Actions run</text>
+<path class="baseline" d="M39 58H961"/>
+
+<rect x="39" y="68" width="922" height="150" fill="url(#grid)"/>
+<path class="baseline" d="M39 147H961"/>
+<path class="signal" stroke-width="2.2" d="M39 147H114V120H171V147H244V171H298V147H356V108H411V147H475V174H516V120H577V147H663V169H708V147H765V113H824V147H886V163H923V147H961"/>
+
+<g clip-path="url(#screen)">
+  <g class="probe">
+    <rect x="-76" y="68" width="115" height="153" fill="url(#sweep)"/>
+    <path d="M39 68V221" stroke="#ffd278" stroke-width="1.5"/>
+  </g>
+</g>
+</svg>

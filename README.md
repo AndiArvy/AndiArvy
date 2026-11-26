@@ -1,17 +1,16 @@
-<p align="center">
-  <img src="./assets/profile-banner.gif" width="100%" alt="M. Andi Abdillah, Firmware and Embedded Systems" />
-</p>
+# M. Andi Abdillah
 
-I build firmware and electronics for robots and connected devices, from sensor interfaces and PCB design to system integration and field testing.
+**Embedded systems engineer** · Firmware, electronics, and robotics · [LinkedIn ↗](https://www.linkedin.com/in/m-andi-abdillah/)
 
-[Connect on LinkedIn](https://www.linkedin.com/in/m-andi-abdillah/)
+<a href="https://robonation.org/record-breaking-roboboat-2025-showcases-the-future-of-autonomous-maritime-technology/">
+  <img src="./assets/vessel.jpg" width="100%" alt="Barunastra ITS autonomous surface vessel on the water, featuring STM32 firmware and a redesigned PCB" />
+</a>
 
-### Selected work
+At **Barunastra ITS**, I rewrote the vessel’s STM32 firmware and redesigned the electronics, reducing PCB size by about **70%**. Our team took **1st place at RoboBoat 2025**.
 
-- **Autonomous surface vessel · Barunastra ITS** — Rewrote the STM32 firmware and redesigned the electronics, reducing PCB size by about 70%. Our team placed **1st in the RoboBoat Autonomy Challenge (2025)**.
-- **Smart aquaculture · BRIN** — Built a Python/MQTT bridge to process water-quality telemetry and relay actuator commands.
-- **Educational robotics** — Designed KiCad carrier boards for Arduino Nano and ESP32 with motor, sensor, and display interfaces.
-
-### Toolkit
+- **Smart aquaculture · BRIN** — Built a Python/MQTT bridge for water-quality telemetry and actuator control.
+- **Educational robotics** — Designed KiCad controller boards for Arduino Nano and ESP32 learning robots.
 
 `C/C++` · `STM32` · `ESP32` · `KiCad` · `Python` · `MQTT`
+
+<img src="./assets/contributions.svg" width="100%" alt="GitHub contribution trace with an animated oscilloscope sweep" />
