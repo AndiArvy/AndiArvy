@@ -3,10 +3,10 @@
 **Embedded systems engineer** · Firmware, electronics, and robotics · [LinkedIn ↗](https://www.linkedin.com/in/m-andi-abdillah/)
 
 <a href="https://robonation.org/record-breaking-roboboat-2025-showcases-the-future-of-autonomous-maritime-technology/">
-  <img src="./assets/vessel.jpg" width="100%" alt="Barunastra ITS autonomous surface vessel on the water" />
+  <img src="./assets/vessel-system-redesign.png" width="100%" alt="Barunastra ITS autonomous surface vessel, STM32 firmware and system redesign" />
 </a>
 
-At **Barunastra ITS**, I developed the redesign concept for the vessel’s overall system and rewrote its STM32 firmware. The team’s PCB redesign reduced board size by about **70%**. We took **1st place at RoboBoat 2025**.
+At **Barunastra ITS**, I developed the concept for a system-wide redesign and rewrote the vessel’s STM32 firmware. Our team reduced the board footprint by about **70%** and took **1st place at RoboBoat 2025**.
 
 - **Smart aquaculture · BRIN** — Built a Python/MQTT bridge for water-quality telemetry and actuator control.
 - **Educational robotics** — Designed KiCad controller boards for Arduino Nano and ESP32 learning robots.

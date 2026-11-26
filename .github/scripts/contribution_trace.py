@@ -117,7 +117,7 @@ def render(calendar=None):
   .month {{ fill: #a8c1cc; font: 14px ui-monospace, monospace; }}
   .baseline {{ fill: none; stroke: #314953; }}
   .signal {{ fill: none; stroke: #ffd278; stroke-linecap: round; stroke-linejoin: round; }}
-  .probe {{ opacity: 0; animation: sweep 4.5s ease-in-out; }}
+  .probe {{ opacity: 0; animation: sweep 4.5s ease-in-out infinite; }}
   @keyframes sweep {{
     0% {{ transform: translateX(0); opacity: 0; }}
     10%, 90% {{ opacity: 1; }}
