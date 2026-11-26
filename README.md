@@ -49,7 +49,7 @@ I designed KiCad controller boards for Arduino Nano and ESP32 learning robots. T
 
 ## GitHub activity
 
-The oscilloscope scrolls through a waveform driven by daily contribution counts. Busier weeks produce larger, faster pulses. The underlying calendar refreshes daily through GitHub Actions.
+The oscilloscope scrolls through a waveform driven by daily contribution counts. Busier weeks produce larger, faster pulses, and a small heartbeat marks weeks with zero contributions. The calendar refreshes daily through GitHub Actions.
 
 <picture>
   <source media="(prefers-reduced-motion: reduce)" srcset="./assets/contributions.svg#reduced-motion" />
