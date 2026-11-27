@@ -30,13 +30,18 @@ jobs:
 
       - name: Publish the refreshed image
         run: |
-          if git diff --quiet -- assets/contributions.svg; then
+          asset_ref=refs/heads/contribution-assets
+          asset_dir="$RUNNER_TEMP/contribution-assets"
+          git fetch --no-tags --depth=1 origin "$asset_ref"
+          git worktree add --detach "$asset_dir" FETCH_HEAD
+          cp assets/contributions.svg "$asset_dir/contributions.svg"
+
+          git -C "$asset_dir" add -- contributions.svg
+          if git -C "$asset_dir" diff --cached --quiet; then
             exit 0
           fi
 
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- assets/contributions.svg
-          git commit -m 'Refresh contribution trace'
-          git pull --rebase origin "$GITHUB_REF_NAME"
-          git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"
+          git -C "$asset_dir" -c user.name='github-actions[bot]' \
+            -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -m 'Refresh contribution trace'
+          git -C "$asset_dir" push origin "HEAD:$asset_ref"

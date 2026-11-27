@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import date
-from math import exp, log1p, sin, tau
+from math import log1p, sin, tau
 from pathlib import Path
 from urllib.request import Request, urlopen
 
@@ -14,10 +14,11 @@ SCOPE_TOP = 246
 SCOPE_BOTTOM = 385
 SCOPE_HEIGHT = SCOPE_BOTTOM - SCOPE_TOP
 SCOPE_CENTER = (SCOPE_TOP + SCOPE_BOTTOM) / 2
-WEEK_SECONDS = 0.25
-SAMPLES_PER_DAY = 10
+WEEK_SECONDS = 1
+SAMPLES_PER_DAY = 12  # Keeps the weekly sample count divisible by 1, 2, 3, and 4 cycles.
 SAMPLES_PER_WEEK = 7 * SAMPLES_PER_DAY
-HISTORY_SAMPLES = 100
+HISTORY_SAMPLES = 10 * SAMPLES_PER_DAY
+HEARTBEAT_AMPLITUDE = 0.18
 READOUT_Y = 228
 READOUT_ROW = 24
 PALETTE = {
@@ -66,51 +67,26 @@ def fetch_calendar(login, token):
     return result["data"]["user"]["contributionsCollection"]["contributionCalendar"]
 
 
-def heartbeat(phase):
-    # P wave, QRS complex, and T wave.
-    peaks = ((0.18, 0.055, 0.14), (0.36, 0.027, -0.22), (0.40, 0.023, 1),
-             (0.45, 0.026, -0.34), (0.67, 0.09, 0.24))
-    return sum(height * exp(-((phase - center) / spread) ** 2)
-               for center, spread, height in peaks)
-
-
 def waveform_samples(weekly_counts, totals):
     peak = log1p(max(totals)) or 1
-    days = []
+    samples = []
     for counts, total in zip(weekly_counts, totals):
         activity = log1p(total) / peak
+        cycles = 2 + round(2 * activity) if total else 1
+        samples_per_cycle = SAMPLES_PER_WEEK // cycles
         daily_peak = log1p(max(counts)) or 1
-        for count in counts:
-            daily = log1p(count) / daily_peak
-            amplitude = activity ** 0.58 * (0.48 + 0.52 * daily ** 0.74)
-            days.append((activity, amplitude))
-
-    sample_rate = SAMPLES_PER_WEEK / WEEK_SECONDS
-    levels = []
-    for (activity, amplitude), (next_activity, next_amplitude) in zip(days, days[1:] + days[:1]):
-        idle = float(activity == 0)
-        next_idle = float(next_activity == 0)
-        for index in range(SAMPLES_PER_DAY):
-            fraction = index / SAMPLES_PER_DAY
-            rate = 8 + 8.5 * (activity + (next_activity - activity) * fraction)
-            gain = amplitude + (next_amplitude - amplitude) * fraction
-            idle_gain = idle + (next_idle - idle) * fraction
-            levels.append((rate / sample_rate, gain, idle_gain))
-
-    # End on the same phase as the start so the scrolling trace can wrap.
-    turns = sum(rate for rate, _, _ in levels)
-    correction = (round(turns) - turns) / len(levels)
-    # Use whole beats over the scan so the idle trace wraps cleanly.
-    beats = max(1, round(3.5 * len(levels) / sample_rate))
-    phase = 0
-    samples = []
-    for index, (rate, gain, idle_gain) in enumerate(levels):
-        angle = tau * phase
-        signal = (0.64 * sin(angle) + 0.20 * sin(2 * angle + 0.8)
-                  + 0.13 * sin(5 * angle + 1.3) + 0.08 * sin(7 * angle - 0.3))
-        idle_pulse = 0.27 * idle_gain * heartbeat((index * beats / len(levels)) % 1)
-        samples.append(gain * signal + idle_pulse)
-        phase += rate + correction
+        for cycle in range(cycles):
+            start_day = round(cycle * len(counts) / cycles)
+            end_day = round((cycle + 1) * len(counts) / cycles)
+            daily = log1p(max(counts[start_day:end_day])) / daily_peak
+            amplitude = HEARTBEAT_AMPLITUDE + (1 - HEARTBEAT_AMPLITUDE) * activity ** 0.58 * (
+                0.48 + 0.52 * daily ** 0.74
+            )
+            # Each cycle starts at the rising zero crossing, including at the loop seam.
+            samples.extend(
+                amplitude * sin(tau * index / samples_per_cycle)
+                for index in range(samples_per_cycle)
+            )
     return samples
 
 
@@ -220,7 +196,7 @@ def render(calendar=None):
     graph = calendar_graph(weeks) if weeks else ''
     description = status
     if weeks:
-        description += '. The scrolling waveform follows the contribution calendar, with a small heartbeat during idle weeks.'
+        description += '. The scrolling sine wave follows the contribution calendar, with a small sinusoidal heartbeat during idle weeks.'
 
     return f"""<svg xmlns="http://www.w3.org/2000/svg" id="reduced-motion" width="{WIDTH}" height="{HEIGHT}" viewBox="0 0 {WIDTH} {HEIGHT}" role="img" aria-labelledby="title status">
 <title id="title">Contribution trace</title>

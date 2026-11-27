@@ -84,9 +84,9 @@ Schematic and PCB design, sensor interfacing, motor control, and power distribut
 
 ## GitHub activity
 
-The oscilloscope scrolls through a waveform driven by daily contribution counts. Busier weeks produce larger, faster pulses, and a small heartbeat marks weeks with zero contributions. The calendar refreshes daily through GitHub Actions.
+The oscilloscope scrolls through sine waves driven by contribution counts. Busier weeks produce taller, faster waves, and a small sinusoidal heartbeat marks weeks with zero contributions. Amplitude and frequency change at the start of a full cycle. The calendar refreshes daily through GitHub Actions.
 
 <picture>
-  <source media="(prefers-reduced-motion: reduce)" srcset="./assets/contributions.svg#reduced-motion" />
-  <img src="./assets/contributions.svg" width="100%" alt="GitHub contribution calendar with a scanner, a weekly count, and a scrolling oscilloscope waveform." />
+  <source media="(prefers-reduced-motion: reduce)" srcset="https://raw.githubusercontent.com/AndiArvy/AndiArvy/contribution-assets/contributions.svg#reduced-motion" />
+  <img src="https://raw.githubusercontent.com/AndiArvy/AndiArvy/contribution-assets/contributions.svg" width="100%" alt="GitHub contribution calendar with a scanner, a weekly count, and a scrolling oscilloscope waveform." />
 </picture>
