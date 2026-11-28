@@ -84,7 +84,7 @@ Schematic and PCB design, sensor interfacing, motor control, and power distribut
 
 ## GitHub activity
 
-The oscilloscope scrolls through sine waves driven by contribution counts. Busier weeks produce taller, faster waves, and a small sinusoidal heartbeat marks weeks with zero contributions. Amplitude and frequency change at the start of a full cycle. The calendar refreshes daily through GitHub Actions.
+The oscilloscope shows two to eighteen cycles per active week. Busier weeks produce taller, faster waves, and idle weeks show one small heartbeat. Amplitude and frequency change at the start of a full cycle. The calendar refreshes daily through GitHub Actions.
 
 <picture>
   <source media="(prefers-reduced-motion: reduce)" srcset="https://raw.githubusercontent.com/AndiArvy/AndiArvy/contribution-assets/contributions.svg#reduced-motion" />

@@ -15,9 +15,10 @@ SCOPE_BOTTOM = 385
 SCOPE_HEIGHT = SCOPE_BOTTOM - SCOPE_TOP
 SCOPE_CENTER = (SCOPE_TOP + SCOPE_BOTTOM) / 2
 WEEK_SECONDS = 1
-SAMPLES_PER_DAY = 12  # Keeps the weekly sample count divisible by 1, 2, 3, and 4 cycles.
+SAMPLES_PER_DAY = 36
 SAMPLES_PER_WEEK = 7 * SAMPLES_PER_DAY
 HISTORY_SAMPLES = 10 * SAMPLES_PER_DAY
+MAX_CYCLES_PER_WEEK = 18
 HEARTBEAT_AMPLITUDE = 0.18
 READOUT_Y = 228
 READOUT_ROW = 24
@@ -68,16 +69,21 @@ def fetch_calendar(login, token):
 
 
 def waveform_samples(weekly_counts, totals):
-    peak = log1p(max(totals)) or 1
+    peak_total = max(totals) or 1
+    peak_amplitude = log1p(peak_total)
+    contribution_range = max(1, peak_total - 1)
     samples = []
     for counts, total in zip(weekly_counts, totals):
-        activity = log1p(total) / peak
-        cycles = 2 + round(2 * activity) if total else 1
-        samples_per_cycle = SAMPLES_PER_WEEK // cycles
+        activity = log1p(total) / peak_amplitude
+        relative_total = max(0, total - 1) / contribution_range
+        cycles = 2 + round((MAX_CYCLES_PER_WEEK - 2) * relative_total ** 0.65) if total else 1
         daily_peak = log1p(max(counts)) or 1
         for cycle in range(cycles):
-            start_day = round(cycle * len(counts) / cycles)
-            end_day = round((cycle + 1) * len(counts) / cycles)
+            start = cycle * SAMPLES_PER_WEEK // cycles
+            stop = (cycle + 1) * SAMPLES_PER_WEEK // cycles
+            samples_per_cycle = stop - start
+            start_day = start // SAMPLES_PER_DAY
+            end_day = (stop - 1) // SAMPLES_PER_DAY + 1
             daily = log1p(max(counts[start_day:end_day])) / daily_peak
             amplitude = HEARTBEAT_AMPLITUDE + (1 - HEARTBEAT_AMPLITUDE) * activity ** 0.58 * (
                 0.48 + 0.52 * daily ** 0.74
