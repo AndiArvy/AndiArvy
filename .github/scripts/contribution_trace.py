@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import date
-from math import log1p, sin, tau
+from math import ceil, log1p, sin, tau
 from pathlib import Path
 from urllib.request import Request, urlopen
 
@@ -18,7 +18,7 @@ WEEK_SECONDS = 1
 SAMPLES_PER_DAY = 24
 SAMPLES_PER_WEEK = 7 * SAMPLES_PER_DAY
 HISTORY_SAMPLES = 10 * SAMPLES_PER_DAY
-FREQUENCY_THRESHOLDS = ((24, 8), (17, 4), (12, 2))
+FREQUENCY_PERCENTILES = ((0.94, 8), (0.80, 4), (0.55, 2))
 HEARTBEAT_AMPLITUDE = 0.18
 READOUT_Y = 228
 READOUT_ROW = 24
@@ -68,11 +68,20 @@ def fetch_calendar(login, token):
     return result["data"]["user"]["contributionsCollection"]["contributionCalendar"]
 
 
-def frequency_for_week(total, day_count):
-    for minimum_daily_count, frequency in FREQUENCY_THRESHOLDS:
-        if total >= minimum_daily_count * day_count:
-            return frequency
-    return 1
+def weekly_frequencies(daily_averages):
+    active_averages = sorted(average for average in daily_averages if average > 0)
+    if not active_averages:
+        return [1] * len(daily_averages)
+
+    # Strict cutoffs keep weeks tied at a threshold in the slower band.
+    thresholds = [
+        (max(1, active_averages[ceil(percentile * len(active_averages)) - 1]), frequency)
+        for percentile, frequency in FREQUENCY_PERCENTILES
+    ]
+    return [
+        next((frequency for threshold, frequency in thresholds if average > threshold), 1)
+        for average in daily_averages
+    ]
 
 
 def waveform_samples(weekly_counts, totals, frequencies):
@@ -133,7 +142,7 @@ def calendar_graph(weeks):
     marks = []
     weekly_counts = []
     totals = []
-    frequencies = []
+    daily_averages = []
     readings = []
     month = None
     label_x = -100
@@ -153,12 +162,14 @@ def calendar_graph(weeks):
             marks.append(f'<rect x="{x}" y="{y}" width="{step - 4}" height="12" rx="2.5" fill="{fill}"/>')
             counts[day['weekday']] = day['contributionCount']
         total = sum(counts)
-        frequency = frequency_for_week(total, len(days))
         weekly_counts.append(counts)
         totals.append(total)
-        frequencies.append(frequency)
+        daily_averages.append(total / len(days))
         unit = 'contribution' if total == 1 else 'contributions'
-        readings.append(f"Week of {first_date:%b} {first_date.day}, {first_date.year} · {total:,} {unit} · {frequency} Hz")
+        readings.append(f"Week of {first_date:%b} {first_date.day}, {first_date.year} · {total:,} {unit}")
+
+    frequencies = weekly_frequencies(daily_averages)
+    readings = [f'{reading} · {frequency} Hz' for reading, frequency in zip(readings, frequencies)]
 
     # Begin with a recent active week so the display has a signal on load.
     start_week = max(range(max(0, len(weeks) - 8), len(weeks)), key=totals.__getitem__)

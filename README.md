@@ -84,7 +84,7 @@ Schematic and PCB design, sensor interfacing, motor control, and power distribut
 
 ## GitHub activity
 
-The oscilloscope runs at 1 Hz below a weekly average of 12 contributions per day. It switches to 2 Hz at 12, 4 Hz at 17, and 8 Hz at 24. The wave gets taller with more activity, and idle weeks show a small heartbeat. The calendar refreshes daily through GitHub Actions.
+The oscilloscope uses 1 Hz as its base frequency. It switches to 2, 4, or 8 Hz above the 55th, 80th, or 94th percentile of active weeks, based on average daily contributions. Idle weeks show a small heartbeat. The calendar refreshes daily through GitHub Actions.
 
 <picture>
   <source media="(prefers-reduced-motion: reduce)" srcset="https://raw.githubusercontent.com/AndiArvy/AndiArvy/contribution-assets/contributions.svg#reduced-motion" />
