@@ -15,10 +15,10 @@ SCOPE_BOTTOM = 385
 SCOPE_HEIGHT = SCOPE_BOTTOM - SCOPE_TOP
 SCOPE_CENTER = (SCOPE_TOP + SCOPE_BOTTOM) / 2
 WEEK_SECONDS = 1
-SAMPLES_PER_DAY = 36
+SAMPLES_PER_DAY = 24
 SAMPLES_PER_WEEK = 7 * SAMPLES_PER_DAY
 HISTORY_SAMPLES = 10 * SAMPLES_PER_DAY
-MAX_CYCLES_PER_WEEK = 18
+FREQUENCY_THRESHOLDS = ((24, 8), (17, 4), (12, 2))
 HEARTBEAT_AMPLITUDE = 0.18
 READOUT_Y = 228
 READOUT_ROW = 24
@@ -68,15 +68,19 @@ def fetch_calendar(login, token):
     return result["data"]["user"]["contributionsCollection"]["contributionCalendar"]
 
 
-def waveform_samples(weekly_counts, totals):
-    peak_total = max(totals) or 1
-    peak_amplitude = log1p(peak_total)
-    contribution_range = max(1, peak_total - 1)
+def frequency_for_week(total, day_count):
+    for minimum_daily_count, frequency in FREQUENCY_THRESHOLDS:
+        if total >= minimum_daily_count * day_count:
+            return frequency
+    return 1
+
+
+def waveform_samples(weekly_counts, totals, frequencies):
+    peak_amplitude = log1p(max(totals)) or 1
     samples = []
-    for counts, total in zip(weekly_counts, totals):
+    for counts, total, frequency in zip(weekly_counts, totals, frequencies):
         activity = log1p(total) / peak_amplitude
-        relative_total = max(0, total - 1) / contribution_range
-        cycles = 2 + round((MAX_CYCLES_PER_WEEK - 2) * relative_total ** 0.65) if total else 1
+        cycles = frequency * WEEK_SECONDS
         daily_peak = log1p(max(counts)) or 1
         for cycle in range(cycles):
             start = cycle * SAMPLES_PER_WEEK // cycles
@@ -129,6 +133,7 @@ def calendar_graph(weeks):
     marks = []
     weekly_counts = []
     totals = []
+    frequencies = []
     readings = []
     month = None
     label_x = -100
@@ -148,10 +153,12 @@ def calendar_graph(weeks):
             marks.append(f'<rect x="{x}" y="{y}" width="{step - 4}" height="12" rx="2.5" fill="{fill}"/>')
             counts[day['weekday']] = day['contributionCount']
         total = sum(counts)
+        frequency = frequency_for_week(total, len(days))
         weekly_counts.append(counts)
         totals.append(total)
+        frequencies.append(frequency)
         unit = 'contribution' if total == 1 else 'contributions'
-        readings.append(f"Week of {first_date:%b} {first_date.day}, {first_date.year} · {total:,} {unit}")
+        readings.append(f"Week of {first_date:%b} {first_date.day}, {first_date.year} · {total:,} {unit} · {frequency} Hz")
 
     # Begin with a recent active week so the display has a signal on load.
     start_week = max(range(max(0, len(weeks) - 8), len(weeks)), key=totals.__getitem__)
@@ -161,7 +168,7 @@ def calendar_graph(weeks):
     first = start_week * SAMPLES_PER_WEEK + start_day * SAMPLES_PER_DAY + SAMPLES_PER_DAY // 2
     latest_day = weekly_counts[-1].index(max(weekly_counts[-1]))
     latest = (len(weeks) - 1) * SAMPLES_PER_WEEK + latest_day * SAMPLES_PER_DAY + SAMPLES_PER_DAY // 2
-    samples = waveform_samples(weekly_counts, totals)
+    samples = waveform_samples(weekly_counts, totals, frequencies)
     offset = first * WEEK_SECONDS / SAMPLES_PER_WEEK
     timing = f'begin="{-offset:.4f}s" dur="{len(weeks) * WEEK_SECONDS:.2f}s" repeatCount="indefinite"'
     sweep = animate_transform('translate', ['0 0', f'{travel} 0'], timing)

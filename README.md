@@ -84,7 +84,7 @@ Schematic and PCB design, sensor interfacing, motor control, and power distribut
 
 ## GitHub activity
 
-The oscilloscope shows two to eighteen cycles per active week. Busier weeks produce taller, faster waves, and idle weeks show one small heartbeat. Amplitude and frequency change at the start of a full cycle. The calendar refreshes daily through GitHub Actions.
+The oscilloscope runs at 1 Hz below a weekly average of 12 contributions per day. It switches to 2 Hz at 12, 4 Hz at 17, and 8 Hz at 24. The wave gets taller with more activity, and idle weeks show a small heartbeat. The calendar refreshes daily through GitHub Actions.
 
 <picture>
   <source media="(prefers-reduced-motion: reduce)" srcset="https://raw.githubusercontent.com/AndiArvy/AndiArvy/contribution-assets/contributions.svg#reduced-motion" />
